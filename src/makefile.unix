@@ -131,9 +131,12 @@ OBJS= \
     obj/pbkdf2.o \
     obj/scrypt_mine.o \
     obj/scrypt-x86.o \
-    obj/scrypt-x86_64.o
+    obj/scrypt-x86_64.o \
+ obj/scrypt-arm.o
 
 all: stoned
+# added new file "src/scrypt-arm.S"(obj/script-arm.o) of Diamond https://github.com/feldenthorne/Diamond/commit/01046753bf3e566d000854a41a2417493bd8db7c#diff-692b9d8596020ed1936d7f5af9508722
+
 
 LIBS += $(CURDIR)/leveldb/libleveldb.a $(CURDIR)/leveldb/libmemenv.a
 DEFS += $(addprefix -I,$(CURDIR)/leveldb/include)
@@ -157,6 +160,17 @@ obj/scrypt-x86.o: scrypt-x86.S
 
 obj/scrypt-x86_64.o: scrypt-x86_64.S
 	$(CXX) -c $(xCXXFLAGS) -MMD -o $@ $<
+
+
+
+
+#hinzugefuegt
+obj/scrypt-arm.o: scrypt-arm.S
+	$(CXX) -c $(xCXXFLAGS) -MMD -o $@ $<
+
+
+
+
 
 obj/%.o: %.cpp
 	$(CXX) -c $(xCXXFLAGS) -MMD -MF $(@:%.o=%.d) -o $@ $<
