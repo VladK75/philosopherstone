@@ -5,7 +5,7 @@ QT += core gui network
 
 # WARNING hardcoded SSL-PATHes, change them to your PATHes but other pathes dit not work for me (because of my broken SSL-installation or these hardcoded SSL-pathes somewhere else?)
 OPENSSL_LIB_PATH = /usr/local/ssl/lib
-OPENSSL_INCLUDE_PATH = /usr/local/ssl/include/openssl
+OPENSSL_INCLUDE_PATH = /usr/local/ssl/include/
 
 # OPENSSL_LIB_PATH = /usr/lib/arm-linux-gnueabihf
 # OPENSSL_INCLUDE_PATH = /usr/include
@@ -24,10 +24,15 @@ BDB_LIB_SUFFIX = -4.8
 BDB_INCLUDE_PATH = /usr/local/BerkeleyDB.4.8/include/
 
 INCLUDEPATH += src src/json src/qt
-DEFINES += QT_GUI BOOST_THREAD_USE_LIB BOOST_SPIRIT_THREADSAFE BOOST_THREAD_PROVIDES_GENERIC_SHARED_MUTEX_ON_WIN __NO_SYSTEM_INCLUDES
+# adding QT_STATIC has obviously no effect on linking QT-libs (still linked dynamically)
+DEFINES += QT_STATIC QT_GUI BOOST_THREAD_USE_LIB BOOST_SPIRIT_THREADSAFE BOOST_THREAD_PROVIDES_GENERIC_SHARED_MUTEX_ON_WIN __NO_SYSTEM_INCLUDES
 CONFIG += no_include_pwd
 CONFIG += thread
 CONFIG += static
+
+# I did not succeed using QT5 => still using QT4
+# QMAKE_LIBS_QT = /usr/local/Qt-5.10.0/lib
+# INCLUDEPATH = /usr/local/Qt-5.10.0/include/
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 # THE FOLLOWING SECTION WAS NOT TESTED ON WINDOWS-SYSTEM, if errors occure remove "windows: " at beginnung of lines
@@ -53,7 +58,9 @@ contains(RELEASE, 1) {
 
     !windows:!macx {
         # Linux: static link
-        LIBS += -Wl,-Bstatic
+        #LIBS += -Wl,-Bstatic
+# obviously no different effect of "-Bstatic" and "-static" => resulting philosopherstone-qt file is still linked dynamically to shared libs
+	LIBS += -Wl,-static
     }
 }
 
@@ -145,11 +152,14 @@ QMAKE_CLEAN += $$PWD/src/leveldb/libleveldb.a; cd $$PWD/src/leveldb ; $(MAKE) cl
 # Because of scrypt_mine.cpp, we also have to add a compile
 #     flag that states we *really* don't have SSE
 # Otherwise, assume sse2 exists
-!equals($$QMAKE_HOST.arch, armv7l) {
-    message(FOUND host = $$QMAKE_HOST.arch)
-
-QMAKE_CXXFLAGS += -mthumb -DNOSSE
-QMAKE_CFLAGS +=   -mthumb -DNOSSE
+    
+#equals($$QMAKE_HOST.arch, armv7l) {
+host = $$QMAKE_HOST.arch
+message(FOUND $$host)
+equals(host, armv7l) {
+message(setting armv7l successful)    
+QMAKE_CXXFLAGS += -mthumb -DNOSSE  -march=armv7-a -mtune=cortex-a8 
+QMAKE_CFLAGS +=   -mthumb -DNOSSE  -march=armv7-a -mtune=cortex-a8
 
 # for  Raspberry PI 2 (not tested my be you could add '-Ofast' and '-ftree-vectorize -ffast-math', too)
 # QMAKE_CXXFLAGS += -mthumb -DNOSSE  -march=armv7-a -mtune=cortex-a8 
@@ -158,6 +168,12 @@ QMAKE_CFLAGS +=   -mthumb -DNOSSE
 # for Raspberry PI 3    
 # QMAKE_CXXFLAGS += -mthumb -DNOSSE -Ofast -march=armv8-a+crc -mtune=cortex-a53 -mcpu=cortex-a53 -ftree-vectorize -ffast-math
 # QMAKE_CFLAGS +=   -mthumb -DNOSSE -Ofast -march=armv8-a+crc -mtune=cortex-a53 -mcpu=cortex-a53 -ftree-vectorize -ffast-math
+
+
+QMAKE_CXXFLAGS += -DQT_STATIC
+QMAKE_CFLAGS   += -DQT_STATIC
+
+
 }
 else {
 contains(USE_O3, 1) {
@@ -442,7 +458,7 @@ macx:QMAKE_LFLAGS_THREAD += -pthread
 macx:QMAKE_CXXFLAGS_THREAD += -pthread
 
 # very likely unnessesary 
-QMAKE_LIBS_QT_ENTRY = -lssl $$OPENSSL_LIB_PATH
+# QMAKE_LIBS_QT_ENTRY = -lssl $$OPENSSL_LIB_PATH
 
 # Set libraries and includes at end, to use platform-defined defaults if not overridden
 INCLUDEPATH += $$BOOST_INCLUDE_PATH $$BDB_INCLUDE_PATH $$OPENSSL_INCLUDE_PATH $$QRENCODE_INCLUDE_PATH
