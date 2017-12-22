@@ -62,7 +62,15 @@ extern uint32_t nTransactionsUpdated;
 // a good buffer size:
 // https://github.com/pooler/cpuminer/blob/4611186cb88eec76f22a88565675473b2eeade28/scrypt.c#L502-510
 // It basically recommends SCRYPT_BUFFER_SIZE = (sizeof(int) * SCRYPT_MAX_WAYS * 128 + 63)
-#if defined(__x86_64__)
+
+// => I disabled following special x86_64 buffer adjustment because of compile errors on x86_64 machine (very likely some more missing changes [variable definitions] compared to Diamond coin fork => same buffer size for all cpus):
+// ERROR on x86_64 system if this special buffer size algo is used for x86_64:
+// build/scrypt_mine.o: In Funktion `scanhash_scrypt(block_header*, void*, unsigned int, unsigned int&, void*, block_header*)':
+// scrypt_mine.cpp:(.text+0x3b3): Nicht definierter Verweis auf `scrypt_best_throughput'
+// scrypt_mine.cpp:(.text+0x4aa): Nicht definierter Verweis auf `scrypt_core_3way'
+// scrypt_mine.cpp:(.text+0x624): Nicht definierter Verweis auf `scrypt_core_2way'
+
+/* #if defined(__x86_64__)
 
 #define SCRYPT_3WAY
 #define SCRYPT_BUFFER_SIZE (3 * 131072 + 63)
@@ -73,12 +81,13 @@ extern "C" void scrypt_core_2way(uint32_t *X, uint32_t *Y, uint32_t *V);
 extern "C" void scrypt_core_3way(uint32_t *X, uint32_t *Y, uint32_t *Z, uint32_t *V);
 
 #elif ( defined(__i386__)||defined(__arm__) )
-
+*/
 #define SCRYPT_BUFFER_SIZE (131072 + 63)
 
 extern  "C" void scrypt_core(uint32_t *X, uint32_t *V);
-
+/*
 #endif
+*/
 
 void *scrypt_buffer_alloc() {
     return malloc(SCRYPT_BUFFER_SIZE);
