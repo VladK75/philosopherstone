@@ -17,6 +17,9 @@
 #include <boost/filesystem/fstream.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
+#include <QtPlugin> // for static linking of Qt-libraries (libQt5Core.a and so on) "qxcb" plugin must be statically imported
+Q_IMPORT_PLUGIN (QXcbIntegrationPlugin);
+
 
 using namespace std;
 using namespace boost;
