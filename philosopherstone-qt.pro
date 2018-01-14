@@ -55,7 +55,8 @@ MOC_DIR = build
 UI_DIR = build
 
 # use: qmake "RELEASE=1"
-contains(RELEASE, 1) {
+contains(RELEASE, 1) {  
+  
   # Mac: compile for maximum compatibility (10.5, 32-bit)
   macx:QMAKE_CXXFLAGS += -mmacosx-version-min=10.5 -arch x86_64 -isysroot /Developer/SDKs/MacOSX10.5.sdk
   
@@ -80,6 +81,8 @@ contains(RELEASE, 1) {
     #QTPLUGIN.platforms = -
     # At least this QT-plugin is required: "qxcb"
     QTPLUGIN = qxcb
+    
+    DEFINES += INCLUDE_STATIC_QXCB_PLUGIN_IN_MAIN_CPP
     
     QMAKE_CXXFLAGS += -DQT_STATIC
     QMAKE_CFLAGS   += -DQT_STATIC        
@@ -182,7 +185,7 @@ QMAKE_CLEAN += $$PWD/src/leveldb/libleveldb.a; cd $$PWD/src/leveldb ; $(MAKE) cl
 #equals($$QMAKE_HOST.arch, armv7l) {
 host = $$QMAKE_HOST.arch
 message(FOUND $$host)
-isEmpty( RASPBERRY_PI_VERSION_2_OR_3 ) {
+c {
 isEmpty( GENERIC_ARM_CPU ) {
   equals(host, armv7l) {
     message(setting armv7l successful)    
@@ -522,7 +525,7 @@ contains(RELEASE, 1) {
 
 !windows:!macx {
   DEFINES += LINUX
-  contains(RELEASE, -) {
+  isEmpty( RELEASE ) {
     LIBS += -lrt -ldl  
   }
 }
